@@ -45,7 +45,9 @@ export default function MainNav() {
               href='https://discord.gg/byscuits'
               legacyBehavior
               passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()} 
+                target='_blank'
+                rel="noopener noreferrer">
                 Discord
               </NavigationMenuLink>
             </Link>
