@@ -17,6 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from 'next/link';
  
+// const DISCORD_OAUTH = 'https://discord.com/api/oauth2/authorize?client_id=824046366639783945&redirect_uri=https%3A%2F%2Fapi.byscuitbros.com%2Fauthorize&response_type=code&scope=identify%20guilds%20email';
+const DISCORD_OAUTH = 'https://discord.com/api/oauth2/authorize?client_id=824046366639783945&redirect_uri=http%3A%2F%2Flocalhost:3000%2Fauthorize&response_type=code&scope=identify%20guilds%20email';
+
 const formSchema = z.object({
   username: z.string().min(1, {message: 'Username is required'}),
   password: z.string().min(1, {message: 'Password is required'}),
@@ -71,6 +74,7 @@ export default function Login() {
           <Button variant={'outline'} size={'full'} type="submit">Login</Button>
           <hr />
           <div className='flex items-center justify-between'>
+            <Link href={DISCORD_OAUTH}><small>Discord Login</small></Link>
             <Link href={'/register'}><small>Create account</small></Link>
             <Link href={'/'}><small>Forgot Password</small></Link>
           </div>
