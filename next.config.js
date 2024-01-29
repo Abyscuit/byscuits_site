@@ -6,6 +6,9 @@ const nextConfig = {
     DISCORD_SECRET: process.env.DISCORD_SECRET,
     DISCORD_OAUTH: process.env.DISCORD_OAUTH,
   },
+  images: {
+    unoptimized: true,
+  },
 };
 
 module.exports = nextConfig;
