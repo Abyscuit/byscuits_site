@@ -3,9 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Label } from '@/components/ui/label';
 
 const DISCORD_TOKEN_API = 'https://discord.com/api/v10/oauth2/token';
 const REDIRECT_URI = 'http://localhost:3000/authorize';
+const BYSCUIT_API = 'http://localhost:4000';
 
 
 
@@ -56,16 +58,14 @@ export default function Authorize() {
         method: 'POST',
         headers: headers,
         body: params,
-        next: {
-          revalidate: 3600
-        },
         cache: 'force-cache'
       })
         .then(response => response.json())
         .catch(console.error));
     }
     ExchangeCode();
-  }, []);
+  }, [code]);
+
   useEffect(() => {
     async function getUserData() {
       console.log('tokenData', tokenData);
@@ -82,16 +82,39 @@ export default function Authorize() {
         .catch(console.error);
         
       setUserData(response);
-      const { username, discriminator, id, email, globalName, avatar } = response;
+      const { username, discriminator, id, avatar } = response;
       setAvatarURL(`https://cdn.discordapp.com/avatars/${id}/${avatar}`);
+      
       console.log('response:', response);
       console.log('userdata:', userData);
       console.log(`${username}#${discriminator}`);
       console.log(avatarURL);
+
+      // Get SQL data then merge info into object
+      const { users } = await fetch(`${BYSCUIT_API}/users/${id}`)
+        .then(res => res.json())
+        .catch(console.error);
+
+      // Handle non existent user
+      if (users.length === 0) console.log('No user found!');
+      const user = users[0];
+      console.log(user);
+      const mergedData = {...user, ...response};
+      console.log('Data Merged:', mergedData);
+
+      localStorage.setItem('user_data', JSON.stringify(mergedData));
     }
     getUserData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[tokenData]);
+  }, []);
+
   return <>
-    {!error ? <Image src={avatarURL} alt='avatar_image' width={100} height={100} /> : `${error}: ${errorMessage}`}</>;
+    {}
+    <div>
+      <Image src={avatarURL} alt='avatar_image' width={100} height={100} />
+      <Label title='Username'>{error ? `${error}: ${errorMessage}` : userData.username}</Label><br />
+      <Label title='DiscordID'>{userData.id}</Label><br />
+      <Label title='Email'>{userData.email}</Label><br />
+      <Label title='GlobalName'>{userData.global_name}</Label><br />
+    </div></>;
 }
