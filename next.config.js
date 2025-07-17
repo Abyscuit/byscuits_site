@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // output: 'export',
   env: {
     DISCORD_CLIENTID: process.env.DISCORD_CLIENTID,
     DISCORD_SECRET: process.env.DISCORD_SECRET,
