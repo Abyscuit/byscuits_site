@@ -2,6 +2,7 @@ import MainNav from '@/components/main-nav';
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import ClientProviders from './ClientProviders';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,8 +21,10 @@ export default function RootLayout({
       lang='en'
       className='dark'>
       <body className={inter.className}>
-        <MainNav />
-        {children}
+        <ClientProviders>
+          <MainNav />
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );

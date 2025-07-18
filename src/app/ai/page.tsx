@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { markdown } from '@/lib/markdown';
 import { Textarea } from '@/components/ui/textarea';
+import { useSession, signIn } from "next-auth/react";
 
 const models = [
   {
@@ -45,6 +46,7 @@ const formSchema = z.object({
 });
 
 export default function AI() {
+  const { data: session, status } = useSession();
   const [output, setOutput] = useState('Enter a prompt below');
   const [loading, setLoading] = useState(false);
   const selectedModel = useRef(models[0].value);
@@ -55,11 +57,30 @@ export default function AI() {
     },
   });
 
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+  if (!session) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-2 py-4 md:px-24">
+        <div className="text-center pb-4">
+          <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+          <button
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            onClick={() => signIn("discord")}
+          >
+            Login with Discord
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     const prompt = encodeURI(values.prompt);
     fetch(
-      `http://localhost:8000/gpt?prompt=${prompt}&model=${selectedModel.current}`
+      `http://localhost:4000/gpt?prompt=${prompt}&model=${selectedModel.current}`
     )
       .then(data => {
         data.json().then(d => {

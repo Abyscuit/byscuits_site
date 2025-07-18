@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useSession, signOut, signIn } from "next-auth/react";
 
 // import { cn } from '@/lib/utils';
 // import { Icons } from '@/components/icons';
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/navigation-menu';
 
 export default function MainNav() {
+  const { data: session } = useSession();
   return (
     <header className='flex flex-col items-center justify-between p-3'>
       <NavigationMenu>
@@ -42,6 +44,16 @@ export default function MainNav() {
           </NavigationMenuItem>
           <NavigationMenuItem>
             <Link
+              href='/cloud-dashboard'
+              legacyBehavior
+              passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Cloud Dashboard
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link
               href='https://discord.gg/byscuits'
               legacyBehavior
               passHref>
@@ -52,18 +64,32 @@ export default function MainNav() {
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link
-              href='/login'
-              legacyBehavior
-              passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+          {!session && (
+            <NavigationMenuItem>
+              <button
+                className={navigationMenuTriggerStyle()}
+                onClick={() => signIn('discord')}
+              >
                 Login
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
+              </button>
+            </NavigationMenuItem>
+          )}
         </NavigationMenuList>
       </NavigationMenu>
+      {session && session.user && (
+        <div className="flex items-center gap-2 mt-2">
+          {session.user.image && (
+            <img src={session.user.image} alt="avatar" className="w-8 h-8 rounded-full" />
+          )}
+          <span>{session.user.name}</span>
+          <button
+            className="ml-2 px-2 pb-2 pt-1 bg-blue-900 rounded hover:bg-blue-950"
+            onClick={() => signOut()}
+          >
+            Sign out
+          </button>
+        </div>
+      )}
     </header>
   );
 }
