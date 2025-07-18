@@ -32,3 +32,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Discord OAuth Setup for NextAuth.js
+
+Create a `.env.local` file in the project root with the following variables:
+
+```
+DISCORD_CLIENT_ID=your_discord_client_id
+DISCORD_CLIENT_SECRET=your_discord_client_secret
+NEXTAUTH_URL=http://localhost:3000
+```
+
+Replace `your_discord_client_id` and `your_discord_client_secret` with your actual Discord credentials.
