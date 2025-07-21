@@ -18,8 +18,15 @@ import {
 
 export default function MainNav() {
   const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (email: string): boolean => {
+    const adminEmails = [process.env.ADMIN_EMAIL || 'your-admin-email@example.com'];
+    return adminEmails.includes(email);
+  };
+  
   return (
-    <header className='flex flex-col items-center justify-between p-3'>
+    <header className='flex items-center justify-between p-3'>
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -38,7 +45,7 @@ export default function MainNav() {
               legacyBehavior
               passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Use AI
+                AI
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
@@ -52,18 +59,18 @@ export default function MainNav() {
               </NavigationMenuLink>
             </Link>
           </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link
-              href='https://discord.gg/byscuits'
-              legacyBehavior
-              passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()} 
-                target='_blank'
-                rel="noopener noreferrer">
-                Discord
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
+          {session?.user?.email && isAdmin(session.user.email) && (
+            <NavigationMenuItem>
+              <Link
+                href='/admin/storage'
+                legacyBehavior
+                passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Admin
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          )}
           {!session && (
             <NavigationMenuItem>
               <button
@@ -77,13 +84,13 @@ export default function MainNav() {
         </NavigationMenuList>
       </NavigationMenu>
       {session && session.user && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           {session.user.image && (
             <img src={session.user.image} alt="avatar" className="w-8 h-8 rounded-full" />
           )}
-          <span>{session.user.name}</span>
+          <span className="text-sm font-medium">{session.user.name}</span>
           <button
-            className="ml-2 px-2 pb-2 pt-1 bg-blue-900 rounded hover:bg-blue-950"
+            className="px-3 py-1 bg-blue-900 rounded hover:bg-blue-950 text-sm transition-colors"
             onClick={() => signOut()}
           >
             Sign out
