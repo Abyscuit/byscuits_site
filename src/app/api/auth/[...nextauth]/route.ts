@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
-export const authOptions = {
+const authOptions = {
   providers: [
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -14,21 +14,38 @@ export const authOptions = {
       },
     }),
   ],
-  // You can add more NextAuth config here (callbacks, session, etc.)
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt' as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async signIn(params: any) {
-      // eslint-disable-next-line no-console
-      console.log('SignIn:\n', params.user, params.account, params.profile, params.email, params.credentials);
-      return true;
+      return params;
     },
-    // @ts-expect-error NextAuth callback param typing
-    async session({ session, token }) {
-      session.accessToken = token.accessToken;
+    async session({ session, token }: any) {
+      if (token) {
+        session.user = {
+          ...session.user,
+          email: token.email,
+          name: token.name,
+          image: token.picture,
+        };
+      }
       return session;
+    },
+    async jwt({ token, user, account }: any) {
+      if (account && user) {
+        token.accessToken = account.access_token;
+      }
+      return token;
     },
   },
 };
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST, authOptions }; 
