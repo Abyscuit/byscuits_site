@@ -227,6 +227,34 @@ class FileMetadataManager {
     return permissions;
   }
 
+  async getUserFilesInPath(owner: string, relPath: string): Promise<FileMetadata[]> {
+    const userDir = path.join(process.cwd(), 'uploads', owner, relPath);
+    if (!fs.existsSync(userDir)) return [];
+    const items = fs.readdirSync(userDir, { withFileTypes: true });
+    const results: FileMetadata[] = [];
+    for (const item of items) {
+      const itemPath = path.join(userDir, item.name);
+      const stats = fs.statSync(itemPath);
+      results.push({
+        id: '', // Not using metadata id for folder navigation
+        name: item.name,
+        owner,
+        isPublic: false, // Not using metadata for folder navigation
+        shareToken: undefined,
+        createdAt: stats.birthtime.toISOString(),
+        lastModified: stats.mtime.toISOString(),
+        size: stats.size,
+        type: item.isDirectory() ? 'folder' : 'file',
+        mimeType: !item.isDirectory() ? this.getMimeType(item.name) : undefined,
+      });
+    }
+    // Sort folders first, then files, both alphabetically
+    return results.sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
   private getMimeType(filename: string): string {
     const ext = path.extname(filename).toLowerCase();
     const mimeTypes: { [key: string]: string } = {
