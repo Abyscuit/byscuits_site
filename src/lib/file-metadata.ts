@@ -270,6 +270,29 @@ class FileMetadataManager {
     });
   }
 
+  async deleteAllMetadataInPath(owner: string, relPath: string): Promise<number> {
+    const files = fs.readdirSync(this.metadataDir);
+    let deleted = 0;
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const content = fs.readFileSync(path.join(this.metadataDir, file), 'utf-8');
+        const metadata: FileMetadata = JSON.parse(content);
+        if (metadata.owner === owner) {
+          // If relPath is '', match all; otherwise, match if metadata.name is in relPath or below
+          // We'll use a simple heuristic: if relPath is a prefix of the file's path
+          // But since we only store name, we can only match by name for now
+          // So: if relPath is '', delete all for owner; else, delete if name is in relPath or below
+          // We'll match if relPath is '' or metadata.name === relPath.split('/').pop()
+          if (!relPath || relPath.split('/').includes(metadata.name)) {
+            fs.unlinkSync(path.join(this.metadataDir, file));
+            deleted++;
+          }
+        }
+      }
+    }
+    return deleted;
+  }
+
   private getMimeType(filename: string): string {
     const ext = path.extname(filename).toLowerCase();
     const mimeTypes: { [key: string]: string } = {

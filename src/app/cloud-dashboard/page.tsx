@@ -51,6 +51,8 @@ export default function CloudDashboard() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const uploadErrorRef = useRef<HTMLDivElement>(null);
   const [folderToDeleteContents, setFolderToDeleteContents] = useState<FileItem[] | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -64,6 +66,16 @@ export default function CloudDashboard() {
       uploadErrorRef.current.focus();
     }
   }, [uploadError]);
+
+  useEffect(() => {
+    if (toast) {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = setTimeout(() => setToast(null), 3000);
+    }
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, [toast]);
 
   const fetchStorageStats = async () => {
     try {
@@ -152,14 +164,18 @@ export default function CloudDashboard() {
       const res = await fetch(`/api/cloud/delete?name=${encodeURIComponent(name)}&path=${encodeURIComponent(relPath)}&type=${type}`, { method: 'DELETE' });
       if (res.ok) {
         setFiles(files => files.filter(f => f.name !== name));
+        setToast({ message: `${type === 'folder' ? 'Folder' : 'File'} "${name}" deleted successfully.`, type: 'success' });
       } else {
+        setToast({ message: 'Delete failed', type: 'error' });
         alert('Delete failed');
       }
     } catch (err) {
+      setToast({ message: 'Delete failed', type: 'error' });
       alert('Delete failed');
     } finally {
       setDeleting(null);
       setConfirmDelete(null);
+      setFolderToDeleteContents(null);
     }
   };
 
@@ -367,6 +383,12 @@ export default function CloudDashboard() {
 
   return (
     <main className="min-h-screen bg-background">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-lg text-white transition-opacity duration-300 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}
+          role="alert">
+          {toast.message}
+        </div>
+      )}
       <div className="container mx-auto p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -602,7 +624,7 @@ export default function CloudDashboard() {
                 {files.map(file => (
                   <div
                     key={file.name}
-                    className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors"
+                    className={`flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors ${deleting === file.name ? 'opacity-50 transition-opacity duration-500' : ''}`}
                     onDoubleClick={file.type === 'folder' ? () => handleOpenFolder(file.name) : undefined}
                     style={{ cursor: 'default' }}
                   >
@@ -661,9 +683,23 @@ export default function CloudDashboard() {
                           </ConfirmDialogHeader>
                           <div className="py-4">
                             Are you sure you want to delete <span className="font-semibold">{file.name}</span>? This action cannot be undone.
-                            {file.type === 'folder' && folderToDeleteContents && folderToDeleteContents.length > 0 && (
+                            {file.type === 'folder' && folderToDeleteContents && (
                               <div className="mt-2 text-red-600 text-sm font-medium">
-                                Warning: This folder is not empty. All files and subfolders will be permanently deleted!
+                                {folderToDeleteContents.length === 0 ? (
+                                  <>This folder is empty.</>
+                                ) : (
+                                  <>
+                                    Warning: This folder contains <b>{folderToDeleteContents.filter(f => f.type === 'file').length}</b> file(s) and <b>{folderToDeleteContents.filter(f => f.type === 'folder').length}</b> subfolder(s).<br/>
+                                    The first few items:
+                                    <ul className="list-disc pl-6 mt-1">
+                                      {folderToDeleteContents.slice(0, 3).map(item => (
+                                        <li key={item.name}>{item.type === 'folder' ? '📁' : '📄'} {item.name}</li>
+                                      ))}
+                                      {folderToDeleteContents.length > 3 && <li>...and {folderToDeleteContents.length - 3} more</li>}
+                                    </ul>
+                                    <span className="block mt-1">All files and subfolders will be permanently deleted!</span>
+                                  </>
+                                )}
                               </div>
                             )}
                           </div>
