@@ -287,6 +287,14 @@ export default function CloudDashboard() {
   };
 
   const REQUIRED_GUILD_ID = '1257795491232616629';
+  const ALLOWED_ROLE_IDS = [
+    '1257811218106810462', // Premium Byscuit
+    '1257798871652896849', // Da Crew
+    '1257833372105838776', // IRL
+    '1263487124745879553', // Sub Mod
+    '1257797484542038046', // Moderator
+    '1257797305680003082', // Admin
+  ];
 
   if (status === 'loading') return <div>Loading...</div>;
   if (!session) {
@@ -310,6 +318,25 @@ export default function CloudDashboard() {
           <p className="text-center text-muted-foreground mb-6">
             You must be a member of the Da Byscuits Discord server to use cloud storage.<br/>
             <a href={atob("aHR0cHM6Ly9kaXNjb3JkLmdnL2J5c2N1aXRz")} target="_blank" rel="noopener noreferrer" className="underline text-primary">Join the server here</a> and then sign in again.
+          </p>
+          <Button onClick={() => signIn('discord')}>
+            Re-check Membership
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  const userRoles: string[] = Array.isArray((session.user as any).guildRoles) ? (session.user as any).guildRoles : [];
+  const hasAllowedRole = userRoles.some(roleId => ALLOWED_ROLE_IDS.includes(roleId));
+  if (!hasAllowedRole) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-2 py-4 md:p-24">
+        <div className="space-y-6 p-8 bg-secondary/25 rounded-lg w-full max-w-lg flex flex-col items-center">
+          <h1 className="text-2xl font-bold mb-4 text-center">Insufficient Discord Role</h1>
+          <p className="text-center text-muted-foreground mb-6">
+            You must have a special role in the Da Byscuits Discord server to use cloud storage.<br/>
+            <a href={atob("aHR0cHM6Ly9kaXNjb3JkLmdnL2J5c2N1aXRz")} target="_blank" rel="noopener noreferrer" className="underline text-primary">Join the server here</a> and contact an admin if you need access.
           </p>
           <Button onClick={() => signIn('discord')}>
             Re-check Membership

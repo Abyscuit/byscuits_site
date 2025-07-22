@@ -24,8 +24,17 @@ export default function Home() {
         <div className="w-full bg-card border rounded-lg p-6 flex flex-col items-center gap-3 shadow">
           <h2 className="text-2xl font-bold text-center">Free Cloud Storage for Da Byscuits Members!</h2>
           <p className="text-center text-muted-foreground">
-            If you&apos;re in our Discord server, you get access to your own private cloud storage—upload, share, and access your files from anywhere.<br/>
-            <span className="font-semibold">Not a member?</span> Join the Discord above to unlock this feature!
+            If you&apos;re in our Discord server <span className="font-semibold">and have one of these roles</span>:
+            <ul className="list-disc pl-6 mt-2 mb-2 text-left">
+              <li>Premium Byscuit</li>
+              <li>Da Crew</li>
+              <li>IRL</li>
+              <li>Sub Mod</li>
+              <li>Moderator</li>
+              <li>Admin</li>
+            </ul>
+            you get access to your own private cloud storage—upload, share, and access your files from anywhere.<br/>
+            <span className="font-semibold">Not a member or missing a role?</span> Join the Discord above and contact an admin to get access!
           </p>
           <a href="/cloud-dashboard">
             <button className="mt-2 px-6 py-2 bg-indigo-600 text-white rounded font-semibold shadow hover:bg-indigo-700 transition-colors">

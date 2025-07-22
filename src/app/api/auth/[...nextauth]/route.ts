@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import axios from 'axios';
 
+const GUILD_ID = '1257795491232616629';
+
 const authOptions = {
   providers: [
     DiscordProvider({
@@ -9,7 +11,7 @@ const authOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: 'identify email guilds',
+          scope: 'identify email guilds guilds.members.read',
           redirect_uri: process.env.NEXTAUTH_URL + '/api/auth/callback/discord',
         },
       },
@@ -35,6 +37,15 @@ const authOptions = {
         } catch (e) {
           user.guilds = [];
         }
+        // Fetch roles in the Da Byscuits guild using access token
+        try {
+          const memberRes = await axios.get(`https://discord.com/api/users/@me/guilds/${GUILD_ID}/member`, {
+            headers: { Authorization: `Bearer ${account.access_token}` },
+          });
+          user.guildRoles = memberRes.data.roles;
+        } catch (e) {
+          user.guildRoles = [];
+        }
       }
       return true;
     },
@@ -46,6 +57,7 @@ const authOptions = {
           name: token.name,
           image: token.picture,
           guilds: token.guilds,
+          guildRoles: token.guildRoles,
         };
       }
       return session;
@@ -53,6 +65,9 @@ const authOptions = {
     async jwt({ token, user, account }: any) {
       if (user && user.guilds) {
         token.guilds = user.guilds;
+      }
+      if (user && user.guildRoles) {
+        token.guildRoles = user.guildRoles;
       }
       if (account && user) {
         token.accessToken = account.access_token;
