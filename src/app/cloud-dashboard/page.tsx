@@ -286,6 +286,8 @@ export default function CloudDashboard() {
     return iconMap[extension || ''] || '📄';
   };
 
+  const REQUIRED_GUILD_ID = '1257795491232616629';
+
   if (status === 'loading') return <div>Loading...</div>;
   if (!session) {
     return (
@@ -294,6 +296,23 @@ export default function CloudDashboard() {
           <h1 className="text-2xl font-bold mb-4 text-center">Login Required</h1>
           <Button onClick={() => signIn('discord')}>
             Login with Discord
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session?.user || !Array.isArray((session.user as any).guilds) || !(session.user as any).guilds.includes(REQUIRED_GUILD_ID)) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-2 py-4 md:p-24">
+        <div className="space-y-6 p-8 bg-secondary/25 rounded-lg w-full max-w-lg flex flex-col items-center">
+          <h1 className="text-2xl font-bold mb-4 text-center">Discord Membership Required</h1>
+          <p className="text-center text-muted-foreground mb-6">
+            You must be a member of the Da Byscuits Discord server to use cloud storage.<br/>
+            <a href={atob("aHR0cHM6Ly9kaXNjb3JkLmdnL2J5c2N1aXRz")} target="_blank" rel="noopener noreferrer" className="underline text-primary">Join the server here</a> and then sign in again.
+          </p>
+          <Button onClick={() => signIn('discord')}>
+            Re-check Membership
           </Button>
         </div>
       </main>
