@@ -21,8 +21,10 @@ export default function MainNav() {
   
   // Check if user is admin
   const isAdmin = (email: string): boolean => {
-    const adminEmails = [process.env.ADMIN_EMAIL || 'your-admin-email@example.com'];
-    return adminEmails.includes(email);
+    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'your-admin-email@example.com')
+      .split(',')
+      .map(e => e.trim().toLowerCase());
+    return adminEmails.includes(email.toLowerCase());
   };
   
   return (

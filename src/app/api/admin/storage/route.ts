@@ -6,11 +6,12 @@ import { storageManager } from '@/lib/storage-manager';
 export const runtime = 'nodejs';
 
 // Simple admin check - you might want to implement proper admin roles
-const isAdmin = (email: string): boolean => {
-  // Add your admin emails here
-  const adminEmails = [process.env.ADMIN_EMAIL || 'your-admin-email@example.com'];
-  return adminEmails.includes(email);
-};
+function isAdmin(email: string): boolean {
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'your-admin-email@example.com')
+    .split(',')
+    .map(e => e.trim().toLowerCase());
+  return adminEmails.includes(email.toLowerCase());
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions);

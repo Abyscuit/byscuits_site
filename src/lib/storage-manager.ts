@@ -18,7 +18,7 @@ export interface StorageStats {
 
 class StorageManager {
   private storageDir: string;
-  private defaultLimitBytes = 15 * 1024 * 1024 * 1024; // 15GB
+  private defaultLimitBytes = 50 * 1024 * 1024 * 1024; // 50GB
 
   constructor() {
     this.storageDir = path.join(process.cwd(), 'data', 'user-storage');
