@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (typeof file === 'string') continue;
     
     // Check if file already exists
-    const existingMetadata = await fileMetadataManager.getFileMetadataByName(file.name, session.user.email);
+    const existingMetadata = await fileMetadataManager.getFileMetadataByName(file.name, session.user.email, relPath);
     if (existingMetadata) {
       return NextResponse.json({ error: `File "${file.name}" already exists` }, { status: 409 });
     }
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     fs.writeFileSync(filePath, new Uint8Array(buffer));
     
     // Create metadata for the file
-    await fileMetadataManager.createFileMetadata(file.name, session.user.email, filePath, isPublic);
+    await fileMetadataManager.createFileMetadata(file.name, session.user.email, filePath, isPublic, relPath);
     savedFiles.push(file.name);
   }
 

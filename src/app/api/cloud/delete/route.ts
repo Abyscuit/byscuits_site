@@ -63,13 +63,12 @@ export async function DELETE(req: NextRequest) {
   try {
     if (type === 'folder') {
       fs.rmSync(filePath, { recursive: true, force: true });
+      // Recursively delete all metadata for this folder and its contents
+      await fileMetadataManager.deleteAllMetadataInPath(session.user.email, path.join(relPath, name));
     } else {
       fs.unlinkSync(filePath);
+      await fileMetadataManager.deleteFileMetadataByName(name, session.user.email, relPath);
     }
-    
-    // Delete metadata
-    await fileMetadataManager.deleteFileMetadata(fileMetadata.id);
-    
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });

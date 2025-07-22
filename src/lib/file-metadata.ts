@@ -4,6 +4,7 @@ import path from 'path';
 export interface FileMetadata {
   id: string;
   name: string;
+  path: string; // relative path (e.g., '', 'Test', 'Test/Subfolder')
   owner: string;
   isPublic: boolean;
   shareToken?: string;
@@ -52,12 +53,14 @@ class FileMetadataManager {
     name: string,
     owner: string,
     filePath: string,
-    isPublic: boolean = false
+    isPublic: boolean = false,
+    relPath: string = ''
   ): Promise<FileMetadata> {
     const stats = fs.statSync(filePath);
     const metadata: FileMetadata = {
       id: this.generateId(),
       name,
+      path: relPath,
       owner,
       isPublic,
       shareToken: isPublic ? this.generateShareToken() : undefined,
@@ -84,13 +87,13 @@ class FileMetadataManager {
     return JSON.parse(content);
   }
 
-  async getFileMetadataByName(name: string, owner: string): Promise<FileMetadata | null> {
+  async getFileMetadataByName(name: string, owner: string, relPath: string = ''): Promise<FileMetadata | null> {
     const files = fs.readdirSync(this.metadataDir);
     for (const file of files) {
       if (file.endsWith('.json')) {
         const content = fs.readFileSync(path.join(this.metadataDir, file), 'utf-8');
         const metadata: FileMetadata = JSON.parse(content);
-        if (metadata.name === name && metadata.owner === owner) {
+        if (metadata.name === name && metadata.owner === owner && metadata.path === relPath) {
           return metadata;
         }
       }
@@ -118,13 +121,13 @@ class FileMetadataManager {
     return false;
   }
 
-  async deleteFileMetadataByName(name: string, owner: string): Promise<boolean> {
+  async deleteFileMetadataByName(name: string, owner: string, relPath: string = ''): Promise<boolean> {
     const files = fs.readdirSync(this.metadataDir);
     for (const file of files) {
       if (file.endsWith('.json')) {
         const content = fs.readFileSync(path.join(this.metadataDir, file), 'utf-8');
         const metadata: FileMetadata = JSON.parse(content);
-        if (metadata.name === name && metadata.owner === owner) {
+        if (metadata.name === name && metadata.owner === owner && metadata.path === relPath) {
           fs.unlinkSync(path.join(this.metadataDir, file));
           return true;
         }
@@ -277,16 +280,9 @@ class FileMetadataManager {
       if (file.endsWith('.json')) {
         const content = fs.readFileSync(path.join(this.metadataDir, file), 'utf-8');
         const metadata: FileMetadata = JSON.parse(content);
-        if (metadata.owner === owner) {
-          // If relPath is '', match all; otherwise, match if metadata.name is in relPath or below
-          // We'll use a simple heuristic: if relPath is a prefix of the file's path
-          // But since we only store name, we can only match by name for now
-          // So: if relPath is '', delete all for owner; else, delete if name is in relPath or below
-          // We'll match if relPath is '' or metadata.name === relPath.split('/').pop()
-          if (!relPath || relPath.split('/').includes(metadata.name)) {
-            fs.unlinkSync(path.join(this.metadataDir, file));
-            deleted++;
-          }
+        if (metadata.owner === owner && (metadata.path === relPath || metadata.path.startsWith(relPath + '/'))) {
+          fs.unlinkSync(path.join(this.metadataDir, file));
+          deleted++;
         }
       }
     }
