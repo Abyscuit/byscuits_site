@@ -39,9 +39,10 @@ export async function DELETE(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name');
-  if (!name) {
-    return NextResponse.json({ error: 'No file specified' }, { status: 400 });
-  }
+  const relPath = searchParams.get('path') || '';
+  const type = searchParams.get('type') || 'file';
+  if (!name) return NextResponse.json({ error: 'No file specified' }, { status: 400 });
+  const filePath = path.join(process.cwd(), 'uploads', session.user.email, relPath, name);
 
   // Get file metadata
   const fileMetadata = await fileMetadataManager.getFileMetadataByName(name, session.user.email);
@@ -55,15 +56,12 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
-  const filePath = path.join(process.cwd(), 'uploads', session.user.email, name);
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
   
   try {
-    // Check if it's a directory and remove recursively if so
-    const stats = fs.statSync(filePath);
-    if (stats.isDirectory()) {
+    if (type === 'folder') {
       fs.rmSync(filePath, { recursive: true, force: true });
     } else {
       fs.unlinkSync(filePath);
@@ -73,7 +71,7 @@ export async function DELETE(req: NextRequest) {
     await fileMetadataManager.deleteFileMetadata(fileMetadata.id);
     
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete file' }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
   }
 } 

@@ -118,6 +118,21 @@ class FileMetadataManager {
     return false;
   }
 
+  async deleteFileMetadataByName(name: string, owner: string): Promise<boolean> {
+    const files = fs.readdirSync(this.metadataDir);
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const content = fs.readFileSync(path.join(this.metadataDir, file), 'utf-8');
+        const metadata: FileMetadata = JSON.parse(content);
+        if (metadata.name === name && metadata.owner === owner) {
+          fs.unlinkSync(path.join(this.metadataDir, file));
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   async getUserFiles(owner: string): Promise<FileMetadata[]> {
     const files = fs.readdirSync(this.metadataDir);
     const userFiles: FileMetadata[] = [];

@@ -50,6 +50,7 @@ export default function CloudDashboard() {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const uploadErrorRef = useRef<HTMLDivElement>(null);
+  const [folderToDeleteContents, setFolderToDeleteContents] = useState<FileItem[] | null>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -144,10 +145,11 @@ export default function CloudDashboard() {
     }
   };
 
-  const handleDelete = async (name: string) => {
+  const handleDelete = async (name: string, type: 'file' | 'folder' = 'file') => {
     setDeleting(name);
     try {
-      const res = await fetch(`/api/cloud/delete?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
+      const relPath = currentPath.join('/');
+      const res = await fetch(`/api/cloud/delete?name=${encodeURIComponent(name)}&path=${encodeURIComponent(relPath)}&type=${type}`, { method: 'DELETE' });
       if (res.ok) {
         setFiles(files => files.filter(f => f.name !== name));
       } else {
@@ -345,6 +347,23 @@ export default function CloudDashboard() {
       </main>
     );
   }
+
+  const handleDeleteClick = async (file: FileItem) => {
+    if (file.type === 'folder') {
+      // Fetch contents of the folder to check if it's empty
+      const relPath = [...currentPath, file.name].join('/');
+      try {
+        const res = await fetch(`/api/cloud/files?path=${encodeURIComponent(relPath)}`);
+        const data = await res.json();
+        setFolderToDeleteContents(data.files || []);
+      } catch {
+        setFolderToDeleteContents(null);
+      }
+    } else {
+      setFolderToDeleteContents(null);
+    }
+    setConfirmDelete({ name: file.name });
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -625,12 +644,12 @@ export default function CloudDashboard() {
                           Download
                         </Button>
                       )}
-                      <ConfirmDialog open={!!confirmDelete && confirmDelete.name === file.name} onOpenChange={open => { if (!open) setConfirmDelete(null); }}>
+                      <ConfirmDialog open={!!confirmDelete && confirmDelete.name === file.name} onOpenChange={open => { if (!open) { setConfirmDelete(null); setFolderToDeleteContents(null); } }}>
                         <ConfirmDialogTrigger asChild>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setConfirmDelete({ name: file.name })}
+                            onClick={() => handleDeleteClick(file)}
                             disabled={deleting === file.name}
                           >
                             {deleting === file.name ? 'Deleting...' : 'Delete'}
@@ -642,17 +661,24 @@ export default function CloudDashboard() {
                           </ConfirmDialogHeader>
                           <div className="py-4">
                             Are you sure you want to delete <span className="font-semibold">{file.name}</span>? This action cannot be undone.
+                            {file.type === 'folder' && folderToDeleteContents && folderToDeleteContents.length > 0 && (
+                              <div className="mt-2 text-red-600 text-sm font-medium">
+                                Warning: This folder is not empty. All files and subfolders will be permanently deleted!
+                              </div>
+                            )}
                           </div>
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+                            <Button variant="outline" onClick={() => { setConfirmDelete(null); setFolderToDeleteContents(null); }}>
                               Cancel
                             </Button>
                             <Button
                               variant="destructive"
-                              onClick={() => handleDelete(file.name)}
+                              onClick={() => handleDelete(file.name, file.type)}
                               disabled={deleting === file.name}
                             >
-                              {deleting === file.name ? 'Deleting...' : 'Delete'}
+                              {deleting === file.name ? (
+                                <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Deleting...</span>
+                              ) : 'Delete'}
                             </Button>
                           </div>
                         </ConfirmDialogContent>
