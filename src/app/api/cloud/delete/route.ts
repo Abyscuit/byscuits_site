@@ -45,7 +45,7 @@ export async function DELETE(req: NextRequest) {
   const filePath = path.join(process.cwd(), 'uploads', session.user.email, relPath, name);
 
   // Get file metadata
-  const fileMetadata = await fileMetadataManager.getFileMetadataByName(name, session.user.email);
+  const fileMetadata = await fileMetadataManager.getFileMetadataByName(name, session.user.email, relPath);
   if (!fileMetadata) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
