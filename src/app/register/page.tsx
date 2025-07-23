@@ -2,7 +2,6 @@
 
 // import Link from "next/link";
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,18 +14,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-
-const formSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required' }),
-  email: z.string().email({ message: 'Email is not valid' }),
-  password: z
-    .string()
-    .min(8, { message: 'Password must be at least 8 characters long' }),
-});
+import { formSchema, type RegisterForm } from './types';
 
 export default function Register() {
   // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<RegisterForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: '',
@@ -36,7 +28,7 @@ export default function Register() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: RegisterForm) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
 

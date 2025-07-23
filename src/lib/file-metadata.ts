@@ -1,26 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
-export interface FileMetadata {
-  id: string;
-  name: string;
-  path: string; // relative path (e.g., '', 'Test', 'Test/Subfolder')
-  owner: string;
-  isPublic: boolean;
-  shareToken?: string;
-  createdAt: string;
-  lastModified: string;
-  size: number;
-  type: 'file' | 'folder';
-  mimeType?: string;
-}
-
-export interface FilePermission {
-  userId: string;
-  fileId: string;
-  permission: 'read' | 'write' | 'admin';
-  grantedAt: string;
-}
+import type { FileMetadata, FilePermission } from './types';
 
 class FileMetadataManager {
   private metadataDir: string;
@@ -256,6 +236,7 @@ class FileMetadataManager {
       results.push({
         id: '', // Not using metadata id for folder navigation
         name: item.name,
+        path: relPath,
         owner,
         isPublic: false, // Not using metadata for folder navigation
         shareToken: undefined,

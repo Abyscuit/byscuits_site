@@ -6,18 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Dialog as ConfirmDialog, DialogContent as ConfirmDialogContent, DialogHeader as ConfirmDialogHeader, DialogTitle as ConfirmDialogTitle, DialogTrigger as ConfirmDialogTrigger } from '@/components/ui/dialog';
-
-interface FileItem {
-  id: string;
-  name: string;
-  size: number;
-  type: 'file' | 'folder';
-  lastModified?: string;
-  isPublic: boolean;
-  shareToken?: string;
-  owner: string;
-  mimeType?: string;
-}
+import type { FileItem, StorageStats } from './types';
 
 export default function CloudDashboard() {
   const { data: session, status } = useSession();
@@ -34,15 +23,7 @@ export default function CloudDashboard() {
   const [selectedFileForSharing, setSelectedFileForSharing] = useState<FileItem | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
-  const [storageStats, setStorageStats] = useState<{
-    usedBytes: number;
-    limitBytes: number;
-    usedFormatted: string;
-    limitFormatted: string;
-    usagePercentage: number;
-    totalFiles: number;
-    totalFolders: number;
-  } | null>(null);
+  const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ name: string } | null>(null);
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const fileExplorerRef = useRef<HTMLDivElement>(null);

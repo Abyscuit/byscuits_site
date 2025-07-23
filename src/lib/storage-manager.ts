@@ -1,20 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
-export interface UserStorage {
-  userId: string;
-  usedBytes: number;
-  limitBytes: number;
-  lastUpdated: string;
-}
-
-export interface StorageStats {
-  totalFiles: number;
-  totalFolders: number;
-  usedBytes: number;
-  limitBytes: number;
-  usagePercentage: number;
-}
+import type { UserStorage, StorageStats } from './types';
 
 class StorageManager {
   private storageDir: string;

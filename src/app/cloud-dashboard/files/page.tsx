@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
+import type { CloudFile } from './types';
 
 export default function CloudFiles() {
   const { data: session, status } = useSession();
-  const [files, setFiles] = useState<{ name: string; size: number }[]>([]);
+  const [files, setFiles] = useState<CloudFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);

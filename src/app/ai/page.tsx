@@ -15,22 +15,7 @@ import {
 import { markdown } from '@/lib/markdown';
 import { Textarea } from '@/components/ui/textarea';
 import { useSession, signIn } from "next-auth/react";
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  messages: Message[];
-  model: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { Message, Conversation } from './types';
 
 const models = [
   {
