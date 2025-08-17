@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next build && next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix"
+    "lint:fix": "next lint --fix",
+    "test": "jest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@babel/cli": "^7.23.0",
