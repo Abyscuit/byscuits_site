@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import type { FileMetadata, FilePermission } from './types';
 
-class FileMetadataManager {
+export class FileMetadataManager {
   private metadataDir: string;
   private permissionsDir: string;
 
