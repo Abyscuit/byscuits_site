@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
+import { config } from '@/lib/config';
+import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
 
@@ -42,7 +44,7 @@ export async function DELETE(req: NextRequest) {
   const relPath = searchParams.get('path') || '';
   const type = searchParams.get('type') || 'file';
   if (!name) return NextResponse.json({ error: 'No file specified' }, { status: 400 });
-  const filePath = path.join(process.cwd(), 'uploads', session.user.email, relPath, name);
+  const filePath = path.join(config.getUploadsDir(), session.user.email, relPath, name);
 
   // Get file metadata
   const fileMetadata = await fileMetadataManager.getFileMetadataByName(name, session.user.email, relPath);
@@ -62,15 +64,22 @@ export async function DELETE(req: NextRequest) {
   
   try {
     if (type === 'folder') {
+      logger.info(`Deleting folder: ${filePath}`);
       fs.rmSync(filePath, { recursive: true, force: true });
       // Recursively delete all metadata for this folder and its contents
       await fileMetadataManager.deleteAllMetadataInPath(session.user.email, path.join(relPath, name));
     } else {
+      logger.info(`Deleting file: ${filePath}`);
       fs.unlinkSync(filePath);
       await fileMetadataManager.deleteFileMetadataByName(name, session.user.email, relPath);
     }
+    logger.info(`Successfully deleted ${type}: ${name}`);
     return NextResponse.json({ success: true });
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
+    logger.error(`Error deleting ${type} ${name}:`, err);
+    return NextResponse.json({ 
+      error: 'Failed to delete item',
+      details: config.isProduction() ? undefined : String(err)
+    }, { status: 500 });
   }
 } 

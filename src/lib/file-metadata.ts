@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { FileMetadata, FilePermission } from './types';
+import { config } from './config';
 
 // Re-export types for convenience
 export type { FileMetadata, FilePermission } from './types';
@@ -10,8 +11,9 @@ export class FileMetadataManager {
   private permissionsDir: string;
 
   constructor() {
-    this.metadataDir = path.join(process.cwd(), 'data', 'file-metadata');
-    this.permissionsDir = path.join(process.cwd(), 'data', 'file-permissions');
+    const dataDir = config.getDataDir();
+    this.metadataDir = path.join(dataDir, 'file-metadata');
+    this.permissionsDir = path.join(dataDir, 'file-permissions');
     this.ensureDirectories();
   }
 
@@ -229,7 +231,7 @@ export class FileMetadataManager {
   }
 
   async getUserFilesInPath(owner: string, relPath: string): Promise<FileMetadata[]> {
-    const userDir = path.join(process.cwd(), 'uploads', owner, relPath);
+    const userDir = path.join(config.getUploadsDir(), owner, relPath);
     if (!fs.existsSync(userDir)) return [];
     const items = fs.readdirSync(userDir, { withFileTypes: true });
     const results: FileMetadata[] = [];

@@ -1,13 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import type { UserStorage, StorageStats } from './types';
+import { config } from './config';
 
 class StorageManager {
   private storageDir: string;
   private defaultLimitBytes = 50 * 1024 * 1024 * 1024; // 50GB
 
   constructor() {
-    this.storageDir = path.join(process.cwd(), 'data', 'user-storage');
+    this.storageDir = path.join(config.getDataDir(), 'user-storage');
     this.ensureDirectory();
   }
 
@@ -22,7 +23,7 @@ class StorageManager {
   }
 
   private getUserFilesPath(userId: string): string {
-    return path.join(process.cwd(), 'uploads', userId);
+    return path.join(config.getUploadsDir(), userId);
   }
 
   async getUserStorage(userId: string): Promise<UserStorage> {

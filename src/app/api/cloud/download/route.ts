@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
+import { config } from '@/lib/config';
+import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,7 +45,7 @@ export async function GET(req: NextRequest) {
     if (!fileMetadata || fileMetadata.name !== name) {
       return NextResponse.json({ error: 'Invalid share token or file not found' }, { status: 404 });
     }
-    filePath = path.join(process.cwd(), 'uploads', fileMetadata.owner, name);
+    filePath = path.join(config.getUploadsDir(), fileMetadata.owner, name);
   } else {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -64,21 +66,28 @@ export async function GET(req: NextRequest) {
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
-    filePath = path.join(process.cwd(), 'uploads', session.user.email, name);
+    filePath = path.join(config.getUploadsDir(), session.user.email, name);
   }
 
   if (!fs.existsSync(filePath)) {
+    logger.error(`File not found at path: ${filePath}`);
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
 
-  const fileBuffer = fs.readFileSync(filePath);
-  const contentType = fileMetadata?.mimeType || 'application/octet-stream';
-  
-  return new NextResponse(fileBuffer, {
-    status: 200,
-    headers: {
-      'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="${name}"`,
-    },
-  });
+  try {
+    const fileBuffer = fs.readFileSync(filePath);
+    const contentType = fileMetadata?.mimeType || 'application/octet-stream';
+    
+    return new NextResponse(fileBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(name)}"`,
+        'Cache-Control': 'no-cache',
+      },
+    });
+  } catch (error) {
+    logger.error(`Error reading file ${filePath}:`, error);
+    return NextResponse.json({ error: 'Failed to read file' }, { status: 500 });
+  }
 } 

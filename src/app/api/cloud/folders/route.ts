@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
+import { config } from '@/lib/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     const sanitizedName = name.replace(/[^a-zA-Z0-9-_]/g, '_');
     
     // Create user-specific directory
-    const userDir = path.join(process.cwd(), 'uploads', session.user.email, relPath);
+    const userDir = path.join(config.getUploadsDir(), session.user.email, relPath);
     const folderPath = path.join(userDir, sanitizedName);
     
     // Ensure user directory exists
@@ -85,7 +86,7 @@ export async function GET() {
       return NextResponse.json({ error: 'You must have a special role in the Da Byscuits Discord server.' }, { status: 403 });
     }
 
-    const userDir = path.join(process.cwd(), 'uploads', session.user.email);
+    const userDir = path.join(config.getUploadsDir(), session.user.email);
     
     if (!fs.existsSync(userDir)) {
       return NextResponse.json({ folders: [] });

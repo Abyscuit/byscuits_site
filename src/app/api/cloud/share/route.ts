@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
+import { config } from '@/lib/config';
 import type { FileMetadata } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       file: updatedMetadata,
-      shareUrl: isPublic ? `${process.env.NEXTAUTH_URL}/api/cloud/download?name=${encodeURIComponent(fileName)}&token=${updatedMetadata.shareToken}` : null
+      shareUrl: isPublic ? `${config.getBaseUrl()}/api/cloud/download?name=${encodeURIComponent(fileName)}&token=${updatedMetadata.shareToken}` : null
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update sharing settings' }, { status: 500 });
@@ -111,7 +112,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       file: fileMetadata,
-      shareUrl: fileMetadata.isPublic ? `${process.env.NEXTAUTH_URL}/api/cloud/download?name=${encodeURIComponent(fileName)}&token=${fileMetadata.shareToken}` : null
+      shareUrl: fileMetadata.isPublic ? `${config.getBaseUrl()}/api/cloud/download?name=${encodeURIComponent(fileName)}&token=${fileMetadata.shareToken}` : null
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to get sharing settings' }, { status: 500 });

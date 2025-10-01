@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
 import { storageManager } from '@/lib/storage-manager';
+import { config } from '@/lib/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No files uploaded' }, { status: 400 });
   }
 
-  const userDir = path.join(process.cwd(), 'uploads', session.user.email, relPath);
+  const userDir = path.join(config.getUploadsDir(), session.user.email, relPath);
   if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
 
   const savedFiles = [];
