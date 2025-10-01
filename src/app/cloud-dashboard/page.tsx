@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,12 +35,37 @@ export default function CloudDashboard() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const fetchStorageStats = async () => {
+    try {
+      const res = await fetch('/api/cloud/storage');
+      if (res.ok) {
+        const data = await res.json();
+        setStorageStats(data.stats);
+      }
+    } catch (err) {
+      // Storage stats fetch failed, but don't break the main functionality
+    }
+  };
+
+  const fetchFiles = useCallback(async (pathArr = currentPath) => {
+    try {
+      const relPath = pathArr.join('/');
+      const res = await fetch(`/api/cloud/files?path=${encodeURIComponent(relPath)}`);
+      const data = await res.json();
+      setFiles(data.files || []);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load files');
+      setLoading(false);
+    }
+  }, [currentPath]);
+
   useEffect(() => {
     if (!session) return;
     setLoading(true);
     fetchFiles(currentPath);
     fetchStorageStats();
-  }, [currentPath, session]);
+  }, [currentPath, session, fetchFiles]);
 
   useEffect(() => {
     if (uploadError && uploadErrorRef.current) {
@@ -57,31 +82,6 @@ export default function CloudDashboard() {
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
   }, [toast]);
-
-  const fetchStorageStats = async () => {
-    try {
-      const res = await fetch('/api/cloud/storage');
-      if (res.ok) {
-        const data = await res.json();
-        setStorageStats(data.stats);
-      }
-    } catch (err) {
-      // Storage stats fetch failed, but don't break the main functionality
-    }
-  };
-
-  const fetchFiles = async (pathArr = currentPath) => {
-    try {
-      const relPath = pathArr.join('/');
-      const res = await fetch(`/api/cloud/files?path=${encodeURIComponent(relPath)}`);
-      const data = await res.json();
-      setFiles(data.files || []);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load files');
-      setLoading(false);
-    }
-  };
 
   const handleUpload = async () => {
     if (!selectedFiles) return;

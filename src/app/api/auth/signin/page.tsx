@@ -1,11 +1,11 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default function SignInPage() {
+function SignInContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
@@ -104,5 +104,21 @@ export default function SignInPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background">
+        <main className="flex min-h-screen flex-col items-center justify-center p-2 py-4 md:px-24">
+          <div className="text-center">
+            <div className="text-2xl mb-4">Loading...</div>
+          </div>
+        </main>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 } 

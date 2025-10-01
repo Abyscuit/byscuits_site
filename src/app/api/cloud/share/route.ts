@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { fileMetadataManager, FileMetadata } from '@/lib/file-metadata';
+import { authOptions } from '@/lib/auth';
+import { fileMetadataManager } from '@/lib/file-metadata';
+import type { FileMetadata } from '@/lib/types';
 
 export const runtime = 'nodejs';
 

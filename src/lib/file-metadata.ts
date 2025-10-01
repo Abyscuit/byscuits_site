@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import type { FileMetadata, FilePermission } from './types';
 
+// Re-export types for convenience
+export type { FileMetadata, FilePermission } from './types';
+
 export class FileMetadataManager {
   private metadataDir: string;
   private permissionsDir: string;

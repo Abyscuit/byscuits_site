@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { fileMetadataManager } from '@/lib/file-metadata';
 
 const REQUIRED_GUILD_ID = '1257795491232616629';
